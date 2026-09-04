@@ -67,5 +67,28 @@ export default function useTasks() {
       },
     });
 
-  return { useAllTasks, useGetTask, useCreateTask, useCompleteTask };
+  const useEditTask = () =>
+    useMutation({
+      mutationKey: ['edit-task'],
+      mutationFn: async ({ id, task }: { id: string; task: CreateTask }) => {
+        const { error } = await supabase
+          .from('tasks')
+          .update({ ...task, deadline: task.deadline.toISOString() })
+          .eq('id', id);
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        return true;
+      },
+    });
+
+  return {
+    useAllTasks,
+    useGetTask,
+    useCreateTask,
+    useCompleteTask,
+    useEditTask,
+  };
 }
