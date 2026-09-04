@@ -1,10 +1,8 @@
-import './App.css';
-
 function App() {
   return (
     <>
-      <h1>Base</h1>
-      <p>Main page</p>
+      <h1>Hola</h1>
+      <p>Inicio</p>
     </>
   );
 }
