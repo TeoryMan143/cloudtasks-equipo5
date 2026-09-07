@@ -14,3 +14,13 @@ export type Task = {
 };
 
 export type CreateTask = z.infer<typeof createTaskSchema>;
+
+export type DBTask = {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  created_at: string;
+  deadline: string;
+  priority: string;
+};

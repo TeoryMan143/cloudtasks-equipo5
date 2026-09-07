@@ -1,48 +1,69 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import type { CreateTask } from '../types';
+import type { CreateTask, DBTask, Priority, Task } from '../types';
 import { supabase } from './supabase';
+
+const dbTaskToEntity = (dbt: DBTask): Task => ({
+  ...dbt,
+  deadline: new Date(dbt.deadline),
+  created_at: new Date(dbt.created_at),
+  priority: dbt.priority as Priority,
+});
 
 export default function useTasks() {
   const useAllTasks = (range?: 'day' | 'week' | 'month') =>
-    useQuery({
+    useQuery<Task[]>({
       queryKey: ['all-tasks', range],
       queryFn: async () => {
         const now = new Date();
+
+        if (!range) {
+          const { data, error } = await supabase.from('tasks').select();
+
+          if (error) throw new Error(error.message);
+
+          return data.map(dbTaskToEntity);
+        }
+
         const start = new Date(now);
         const end = new Date(now);
 
         if (range === 'day') {
           start.setHours(0, 0, 0, 0);
+
           end.setDate(end.getDate() + 1);
           end.setHours(0, 0, 0, 0);
-        } else if (range === 'week') {
+        }
+
+        if (range === 'week') {
           const daysSinceMonday = (now.getDay() + 6) % 7;
+
           start.setDate(start.getDate() - daysSinceMonday);
           start.setHours(0, 0, 0, 0);
+
           end.setTime(start.getTime());
           end.setDate(end.getDate() + 7);
-        } else if (range === 'month') {
+        }
+
+        if (range === 'month') {
           start.setDate(1);
           start.setHours(0, 0, 0, 0);
-          end.setFullYear(end.getFullYear(), end.getMonth() + 1, 1);
+
+          end.setMonth(end.getMonth() + 1);
+          end.setDate(1);
           end.setHours(0, 0, 0, 0);
         }
 
-        let query = supabase.from('tasks').select('*');
-
-        if (range) {
-          query = query
-            .gte('deadline', start.toISOString())
-            .lt('deadline', end.toISOString());
-        }
-
-        const { data, error } = await query;
+        const { data, error } = await supabase
+          .from('tasks')
+          .select('*')
+          .gte('deadline', start.toISOString())
+          .lt('deadline', end.toISOString());
 
         if (error) {
           throw new Error(error.message);
         }
 
-        return data;
+        return data.map(dbTaskToEntity);
       },
     });
 
@@ -59,7 +80,11 @@ export default function useTasks() {
           throw new Error(error.message);
         }
 
-        return data;
+        if (data.length === 0) {
+          throw new Error('Task not found');
+        }
+
+        return dbTaskToEntity(data[0]);
       },
     });
 
@@ -67,9 +92,7 @@ export default function useTasks() {
     useMutation({
       mutationKey: ['cr-task'],
       mutationFn: async (task: CreateTask) => {
-        const { error } = await supabase
-          .from('tasks')
-          .insert({ ...task, deadline: task.deadline.toISOString() });
+        const { error } = await supabase.from('tasks').insert(task);
 
         if (error) {
           throw new Error(error.message);
@@ -102,7 +125,7 @@ export default function useTasks() {
       mutationFn: async ({ id, task }: { id: string; task: CreateTask }) => {
         const { error } = await supabase
           .from('tasks')
-          .update({ ...task, deadline: task.deadline.toISOString() })
+          .update(task)
           .eq('id', id);
 
         if (error) {
