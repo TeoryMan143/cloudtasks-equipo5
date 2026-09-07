@@ -1,5 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { CalendarDays, Check, ChevronRight, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { CreateTaskDialog } from './components/create-task-dialog';
+import { TaskDetailsDialog } from './components/taks-details-dialog';
 import { TaskCard } from './components/task-card';
 import { Button } from './components/ui/button';
 import type { Task } from './types';
@@ -48,10 +52,12 @@ function DayCell({
   date,
   tasks,
   isCurrentMonth = true,
+  onTaskClick,
 }: {
   date: Date;
   tasks: Task[];
   isCurrentMonth?: boolean;
+  onTaskClick: (task: Task) => void;
 }) {
   const isToday = dateKey(date) === dateKey(new Date());
   return (
@@ -72,7 +78,12 @@ function DayCell({
       </div>
       <div className='space-y-1'>
         {tasks.map(task => (
-          <TaskCard key={task.id} task={task} compact />
+          <TaskCard
+            key={task.id}
+            task={task}
+            compact
+            onClick={() => onTaskClick(task)}
+          />
         ))}
       </div>
     </div>
@@ -81,7 +92,10 @@ function DayCell({
 
 function App() {
   const [view, setView] = useState<ViewMode>('month');
-  const { useAllTasks } = useTasks();
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const { useAllTasks, useSwitchTaskCompletion } = useTasks();
+  const queryClient = useQueryClient();
+  const switchTaskCompletion = useSwitchTaskCompletion();
   const { data: tasks = [], isLoading, isError } = useAllTasks(view);
   const today = new Date();
   const todayTasks = tasksForDate(tasks, today);
@@ -132,6 +146,7 @@ function App() {
               </Button>
             ))}
           </fieldset>
+          <CreateTaskDialog view={view} />
         </header>
         <section className='overflow-hidden rounded-2xl border border-[#e2e2ef] bg-white shadow-[0_18px_50px_rgba(80,80,224,0.08)]'>
           <div className='flex items-center justify-between border-b border-[#e8e8f2] px-5 py-4 sm:px-6'>
@@ -166,7 +181,11 @@ function App() {
               {todayTasks.length > 0 ? (
                 <div className='max-w-xl space-y-2'>
                   {todayTasks.map(task => (
-                    <TaskCard key={task.id} task={task} />
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onClick={() => setSelectedTask(task)}
+                    />
                   ))}
                 </div>
               ) : (
@@ -189,7 +208,12 @@ function App() {
                   </div>
                   <div className='space-y-1'>
                     {tasksForDate(tasks, date).map(task => (
-                      <TaskCard key={task.id} task={task} compact />
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        compact
+                        onClick={() => setSelectedTask(task)}
+                      />
                     ))}
                   </div>
                 </div>
@@ -214,6 +238,7 @@ function App() {
                       key={dateKey(date)}
                       date={date}
                       tasks={tasksForDate(tasks, date)}
+                      onTaskClick={setSelectedTask}
                       isCurrentMonth={date.getMonth() === today.getMonth()}
                     />
                   ))}
@@ -227,6 +252,31 @@ function App() {
           Completed tasks stay visible so your progress is easy to scan.
         </footer>
       </div>
+      <TaskDetailsDialog
+        task={selectedTask}
+        isPending={switchTaskCompletion.isPending}
+        onOpenChange={open => {
+          if (!open) setSelectedTask(null);
+        }}
+        onToggleCompletion={() => {
+          if (!selectedTask) return;
+          switchTaskCompletion.mutate(selectedTask.id, {
+            onSuccess: async () => {
+              await queryClient.invalidateQueries({
+                queryKey: ['all-tasks', view],
+              });
+              setSelectedTask(null);
+              toast.success(
+                selectedTask.completed
+                  ? 'Task marked as active'
+                  : 'Task marked as completed',
+              );
+            },
+            onError: error =>
+              toast.error(error.message || 'Could not update the task'),
+          });
+        }}
+      />
     </main>
   );
 }

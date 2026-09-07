@@ -102,13 +102,24 @@ export default function useTasks() {
       },
     });
 
-  const useCompleteTask = () =>
+  const useSwitchTaskCompletion = () =>
     useMutation({
       mutationKey: ['com-task'],
       mutationFn: async (id: string) => {
+        const { data, error: prevError } = await supabase
+          .from('tasks')
+          .select()
+          .eq('id', id);
+
+        if (prevError || data.length === 0) {
+          throw new Error(prevError?.message || 'Task not found');
+        }
+
+        const [currentTask] = data;
+
         const { error } = await supabase
           .from('tasks')
-          .update({ completed: true })
+          .update({ completed: !currentTask.completed })
           .eq('id', id);
 
         if (error) {
@@ -140,7 +151,7 @@ export default function useTasks() {
     useAllTasks,
     useGetTask,
     useCreateTask,
-    useCompleteTask,
+    useSwitchTaskCompletion,
     useEditTask,
   };
 }
