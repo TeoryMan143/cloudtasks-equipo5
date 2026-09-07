@@ -3,6 +3,7 @@ import { CalendarDays, Check, ChevronRight, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { CreateTaskDialog } from './components/create-task-dialog';
+import { EditTaskDialog } from './components/edit-task-dialog';
 import { TaskDetailsDialog } from './components/taks-details-dialog';
 import { TaskCard } from './components/task-card';
 import { Button } from './components/ui/button';
@@ -93,6 +94,7 @@ function DayCell({
 function App() {
   const [view, setView] = useState<ViewMode>('month');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const { useAllTasks, useSwitchTaskCompletion } = useTasks();
   const queryClient = useQueryClient();
   const switchTaskCompletion = useSwitchTaskCompletion();
@@ -275,6 +277,18 @@ function App() {
             onError: error =>
               toast.error(error.message || 'Could not update the task'),
           });
+        }}
+        onEdit={() => {
+          if (!selectedTask) return;
+          setEditingTask(selectedTask);
+          setSelectedTask(null);
+        }}
+      />
+      <EditTaskDialog
+        task={editingTask}
+        view={view}
+        onOpenChange={open => {
+          if (!open) setEditingTask(null);
         }}
       />
     </main>
