@@ -16,11 +16,13 @@ export function TaskDetailsDialog({
   isPending,
   onOpenChange,
   onToggleCompletion,
+  onEdit,
 }: {
   task: Task | null;
   isPending: boolean;
   onOpenChange: (open: boolean) => void;
   onToggleCompletion: () => void;
+  onEdit: () => void;
 }) {
   return (
     <Dialog open={task !== null} onOpenChange={onOpenChange}>
@@ -91,9 +93,8 @@ export function TaskDetailsDialog({
               <Button
                 type='button'
                 variant='outline'
-                disabled
-                title='Editing is not available yet'
                 className='sm:mr-auto'
+                onClick={onEdit}
               >
                 <Pencil className='size-3.5' />
                 Edit
