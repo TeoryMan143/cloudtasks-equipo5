@@ -10,6 +10,7 @@ import { TaskCard } from './components/task-card';
 import { Button } from './components/ui/button';
 import type { Task } from './types';
 import useTasks from './utils/use-tasks';
+import useUserRole from './utils/use-user-role';
 
 type ViewMode = 'day' | 'week' | 'month';
 const viewLabels: Record<ViewMode, string> = {
@@ -96,9 +97,12 @@ function App() {
   const [view, setView] = useState<ViewMode>('month');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const { useAllTasks, useSwitchTaskCompletion } = useTasks();
+  const { data: role = 'user' } = useUserRole();
+  const { useAllTasks, useSwitchTaskCompletion, useDeleteTask } =
+    useTasks(role);
   const queryClient = useQueryClient();
   const switchTaskCompletion = useSwitchTaskCompletion();
+  const deleteTask = useDeleteTask();
   const { data: tasks = [], isLoading, isError } = useAllTasks(view);
   const today = new Date();
   const todayTasks = tasksForDate(tasks, today);
@@ -152,7 +156,7 @@ function App() {
 
           <div className='flex flex-col justify-center items-center gap-2 '>
             <LogoutButton />
-            <CreateTaskDialog view={view} />
+            {role === 'admin' && <CreateTaskDialog view={view} role={role} />}
           </div>
         </header>
         <section className='overflow-hidden rounded-2xl border border-[#e2e2ef] bg-white shadow-[0_18px_50px_rgba(80,80,224,0.08)]'>
@@ -262,6 +266,7 @@ function App() {
       <TaskDetailsDialog
         task={selectedTask}
         isPending={switchTaskCompletion.isPending}
+        canEdit={role === 'admin'}
         onOpenChange={open => {
           if (!open) setSelectedTask(null);
         }}
@@ -288,10 +293,25 @@ function App() {
           setEditingTask(selectedTask);
           setSelectedTask(null);
         }}
+        onDelete={() => {
+          if (!selectedTask || !window.confirm('Delete this task?')) return;
+          deleteTask.mutate(selectedTask.id, {
+            onSuccess: async () => {
+              await queryClient.invalidateQueries({
+                queryKey: ['all-tasks', view],
+              });
+              setSelectedTask(null);
+              toast.success('Task deleted successfully');
+            },
+            onError: error =>
+              toast.error(error.message || 'Could not delete the task'),
+          });
+        }}
       />
       <EditTaskDialog
         task={editingTask}
         view={view}
+        role={role}
         onOpenChange={open => {
           if (!open) setEditingTask(null);
         }}
