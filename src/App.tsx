@@ -1,13 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  CalendarDays,
-  Check,
-  ChevronRight,
-  LoaderCircle,
-  LogIn,
-} from 'lucide-react';
+import { CalendarDays, Check, ChevronRight, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import LogoutButton from '@/components/logout-button';
 import { CreateTaskDialog } from './components/create-task-dialog';
 import { EditTaskDialog } from './components/edit-task-dialog';
 import { TaskDetailsDialog } from './components/taks-details-dialog';
@@ -15,7 +10,6 @@ import { TaskCard } from './components/task-card';
 import { Button } from './components/ui/button';
 import type { Task } from './types';
 import useTasks from './utils/use-tasks';
-import LogoutButton from '@/components/logout-button';
 
 type ViewMode = 'day' | 'week' | 'month';
 const viewLabels: Record<ViewMode, string> = {
