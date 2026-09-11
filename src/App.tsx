@@ -1,5 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { CalendarDays, Check, ChevronRight, LoaderCircle } from 'lucide-react';
+import {
+  CalendarDays,
+  Check,
+  ChevronRight,
+  LoaderCircle,
+  LogIn,
+} from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { CreateTaskDialog } from './components/create-task-dialog';
@@ -9,6 +15,7 @@ import { TaskCard } from './components/task-card';
 import { Button } from './components/ui/button';
 import type { Task } from './types';
 import useTasks from './utils/use-tasks';
+import LogoutButton from '@/components/logout-button';
 
 type ViewMode = 'day' | 'week' | 'month';
 const viewLabels: Record<ViewMode, string> = {
@@ -148,7 +155,11 @@ function App() {
               </Button>
             ))}
           </fieldset>
-          <CreateTaskDialog view={view} />
+
+          <div className='flex flex-col justify-center items-center gap-2 '>
+            <LogoutButton />
+            <CreateTaskDialog view={view} />
+          </div>
         </header>
         <section className='overflow-hidden rounded-2xl border border-[#e2e2ef] bg-white shadow-[0_18px_50px_rgba(80,80,224,0.08)]'>
           <div className='flex items-center justify-between border-b border-[#e8e8f2] px-5 py-4 sm:px-6'>
