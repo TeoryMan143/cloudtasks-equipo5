@@ -2,11 +2,18 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  RouterProvider,
+  redirect,
+} from '@tanstack/react-router';
 import App from './App.tsx';
 import LoginPage from './components/login-design';
 import { Toaster } from './components/ui/sonner.tsx';
 import { supabase } from './utils/supabase';
-import {Outlet, RouterProvider, createRouter, createRoute, createRootRoute, redirect,} from '@tanstack/react-router';
 
 const qc = new QueryClient();
 
