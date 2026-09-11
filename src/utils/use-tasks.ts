@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import type { CreateTask, DBTask, Priority, Task } from '../types';
+import type { CreateTask, DBTask, Priority, Task, UserRole } from '../types';
 import { supabase } from './supabase';
 
 const dbTaskToEntity = (dbt: DBTask): Task => ({
@@ -9,7 +9,7 @@ const dbTaskToEntity = (dbt: DBTask): Task => ({
   priority: dbt.priority as Priority,
 });
 
-export default function useTasks() {
+export default function useTasks(role: UserRole = 'user') {
   const useAllTasks = (range?: 'day' | 'week' | 'month') =>
     useQuery<Task[]>({
       queryKey: ['all-tasks', range],
@@ -92,6 +92,10 @@ export default function useTasks() {
     useMutation({
       mutationKey: ['cr-task'],
       mutationFn: async (task: CreateTask) => {
+        if (role !== 'admin') {
+          throw new Error('Only admins can create tasks');
+        }
+
         const { error } = await supabase.from('tasks').insert(task);
 
         if (error) {
@@ -134,10 +138,32 @@ export default function useTasks() {
     useMutation({
       mutationKey: ['edit-task'],
       mutationFn: async ({ id, task }: { id: string; task: CreateTask }) => {
+        if (role !== 'admin') {
+          throw new Error('Only admins can edit tasks');
+        }
+
         const { error } = await supabase
           .from('tasks')
           .update(task)
           .eq('id', id);
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        return true;
+      },
+    });
+
+  const useDeleteTask = () =>
+    useMutation({
+      mutationKey: ['delete-task'],
+      mutationFn: async (id: string) => {
+        if (role !== 'admin') {
+          throw new Error('Only admins can delete tasks');
+        }
+
+        const { error } = await supabase.from('tasks').delete().eq('id', id);
 
         if (error) {
           throw new Error(error.message);
@@ -153,5 +179,6 @@ export default function useTasks() {
     useCreateTask,
     useSwitchTaskCompletion,
     useEditTask,
+    useDeleteTask,
   };
 }

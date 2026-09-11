@@ -1,4 +1,4 @@
-import { Clock3, LoaderCircle, Pencil } from 'lucide-react';
+import { Clock3, LoaderCircle, Pencil, Trash2 } from 'lucide-react';
 import type { Task } from '@/types';
 import { Button } from './ui/button';
 import {
@@ -16,13 +16,17 @@ export function TaskDetailsDialog({
   isPending,
   onOpenChange,
   onToggleCompletion,
+  canEdit,
   onEdit,
+  onDelete,
 }: {
   task: Task | null;
   isPending: boolean;
   onOpenChange: (open: boolean) => void;
   onToggleCompletion: () => void;
+  canEdit: boolean;
   onEdit: () => void;
+  onDelete: () => void;
 }) {
   return (
     <Dialog open={task !== null} onOpenChange={onOpenChange}>
@@ -55,20 +59,22 @@ export function TaskDetailsDialog({
                   {task.description || 'No description provided.'}
                 </p>
               </div>
-              <div className='grid grid-cols-2 gap-4'>
-                <div className='rounded-lg bg-[#F8F8F8] p-3'>
+              <div className='grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2'>
+                <div className='min-w-0 rounded-lg bg-[#F8F8F8] p-3'>
                   <p className='mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#9999aa]'>
                     Deadline
                   </p>
-                  <p className='flex items-center gap-1.5 text-sm font-medium text-[#55556d]'>
+                  <p className='flex min-w-0 items-center gap-1.5 text-sm font-medium text-[#55556d]'>
                     <Clock3 className='size-3.5 text-[#5050E0]' />
-                    {task.deadline.toLocaleString([], {
-                      dateStyle: 'medium',
-                      timeStyle: 'short',
-                    })}
+                    <span className='min-w-0 wrap-break-word'>
+                      {task.deadline.toLocaleString([], {
+                        dateStyle: 'medium',
+                        timeStyle: 'short',
+                      })}
+                    </span>
                   </p>
                 </div>
-                <div className='rounded-lg bg-[#F8F8F8] p-3'>
+                <div className='min-w-0 rounded-lg bg-[#F8F8F8] p-3'>
                   <p className='mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#9999aa]'>
                     Priority
                   </p>
@@ -89,21 +95,34 @@ export function TaskDetailsDialog({
                 </p>
               </div>
             </div>
-            <DialogFooter className='mx-0 mb-0 gap-3 px-6 py-4 sm:flex-row sm:items-center'>
-              <Button
-                type='button'
-                variant='outline'
-                className='sm:mr-auto'
-                onClick={onEdit}
-              >
-                <Pencil className='size-3.5' />
-                Edit
-              </Button>
+            <DialogFooter className='mx-0 mb-0 gap-3 px-6 py-4 sm:flex-row sm:flex-wrap sm:items-center'>
+              {canEdit && (
+                <>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    className='sm:mr-auto'
+                    onClick={onEdit}
+                  >
+                    <Pencil className='size-3.5' />
+                    Edit
+                  </Button>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    className='text-[#b33f4c] hover:bg-[#ffe9eb] hover:text-[#b33f4c]'
+                    onClick={onDelete}
+                  >
+                    <Trash2 className='size-3.5' />
+                    Delete
+                  </Button>
+                </>
+              )}
               <Button
                 type='button'
                 onClick={onToggleCompletion}
                 disabled={isPending}
-                className='bg-[#5050E0] text-white hover:bg-[#5050E0]/90'
+                className='min-w-0 whitespace-normal bg-[#5050E0] text-white hover:bg-[#5050E0]/90 sm:min-w-44 sm:flex-1'
               >
                 {isPending && <LoaderCircle className='size-4 animate-spin' />}
                 {task.completed ? 'Mark as active' : 'Mark as completed'}

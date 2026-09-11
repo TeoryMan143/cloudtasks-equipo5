@@ -1,6 +1,8 @@
 import type z from 'zod';
 import type { createTaskSchema } from './schemas';
 
+export type UserRole = 'user' | 'admin';
+
 export type Priority = 'low' | 'mid' | 'high';
 
 export type Task = {

@@ -6,7 +6,7 @@ import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import type { z } from 'zod';
 import { editTaskSchema } from '../schemas';
-import type { Task } from '../types';
+import type { Task, UserRole } from '../types';
 import useTasks from '../utils/use-tasks';
 import { Button } from './ui/button';
 import {
@@ -36,14 +36,16 @@ function toLocalInputValue(date: Date) {
 export function EditTaskDialog({
   task,
   view,
+  role,
   onOpenChange,
 }: {
   task: Task | null;
   view: ViewMode;
+  role: UserRole;
   onOpenChange: (open: boolean) => void;
 }) {
   const [open, setOpen] = useState(task !== null);
-  const { useEditTask } = useTasks();
+  const { useEditTask } = useTasks(role);
   const editTask = useEditTask();
   const queryClient = useQueryClient();
   const {

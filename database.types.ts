@@ -1,3 +1,5 @@
+import type { UserRole } from '@/types';
+
 export type Json =
   | string
   | number
@@ -14,6 +16,24 @@ export type Database = {
   };
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          role: UserRole;
+        };
+        Insert: {
+          created_at?: string | null;
+          id: string;
+          role?: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          role?: string;
+        };
+        Relationships: [];
+      };
       tasks: {
         Row: {
           completed: boolean;
@@ -49,7 +69,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      is_admin: { Args: never; Returns: boolean };
     };
     Enums: {
       [_ in never]: never;
