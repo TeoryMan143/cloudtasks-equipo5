@@ -1,6 +1,5 @@
+import type { LucideIcon } from 'lucide-react';
 import { forwardRef, type InputHTMLAttributes } from 'react';
-import type {LucideIcon} from 'lucide-react';
-
 
 interface FormFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
