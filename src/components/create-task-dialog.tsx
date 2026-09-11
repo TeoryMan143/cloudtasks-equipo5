@@ -6,6 +6,7 @@ import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import type { z } from 'zod';
 import { createTaskSchema } from '../schemas';
+import type { UserRole } from '../types';
 import useTasks from '../utils/use-tasks';
 import { Button } from './ui/button';
 import {
@@ -33,9 +34,15 @@ const inputClassName =
 const labelClassName =
   'mb-1.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-[#77778b]';
 
-export function CreateTaskDialog({ view }: { view: ViewMode }) {
+export function CreateTaskDialog({
+  view,
+  role,
+}: {
+  view: ViewMode;
+  role: UserRole;
+}) {
   const [open, setOpen] = useState(false);
-  const { useCreateTask } = useTasks();
+  const { useCreateTask } = useTasks(role);
   const createTask = useCreateTask();
   const queryClient = useQueryClient();
   const {

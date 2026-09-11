@@ -1,34 +1,45 @@
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
-import { CalendarDays, Mail, Lock, MoveRight } from 'lucide-react';
-import { supabase } from '@/utils/supabase';
+import { CalendarDays, Lock, Mail, MoveRight } from 'lucide-react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
+import type { z } from 'zod';
 import FormField from '@/components/form-field';
+import { loginSchema } from '@/schemas';
+import { supabase } from '@/utils/supabase';
+
+type LoginForm = z.infer<typeof loginSchema>;
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-
+  const onSubmit: SubmitHandler<LoginForm> = async ({ email, password }) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    setLoading(false);
-
     if (error) {
-      setError('User or password incorrect');
+      setError('password', {
+        type: 'server',
+        message: 'User or password incorrect',
+      });
       return;
     }
 
     navigate({ to: '/' });
-  }
+  };
   return (
     <main className='min-h-screen bg-[#F8F8F8] text-[#26263c] bg-[url(./assets/background-login.png)] bg-cover bg-center'>
       <div className='mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:px-12 justify-center items-center flex flex-col'>
@@ -54,7 +65,7 @@ function LoginPage() {
             </p>
 
             <form
-              onSubmit={handleSubmit}
+              onSubmit={handleSubmit(onSubmit)}
               className='flex w-full max-w-sm flex-col gap-4'
             >
               <FormField
@@ -63,9 +74,8 @@ function LoginPage() {
                 type='email'
                 placeholder='Email address'
                 autoComplete='email'
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
+                error={errors.email?.message}
+                {...register('email')}
               />
               <FormField
                 id='password'
@@ -73,16 +83,14 @@ function LoginPage() {
                 type='password'
                 placeholder='Password'
                 autoComplete='current-password'
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                error={error}
-                required
+                error={errors.password?.message}
+                {...register('password')}
               />
 
               <button
                 type='submit'
-                disabled={loading}
-                className='w-full rounded-lg bg-[#5050E0] py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#5050E0]/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5050E0]'
+                disabled={isSubmitting}
+                className='w-full rounded-lg bg-[#5050E0] py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#5050E0]/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5050E0]'
               >
                 Log in
                 <MoveRight className='size-4 inline-block ml-2' />
