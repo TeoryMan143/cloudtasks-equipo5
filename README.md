@@ -1,35 +1,149 @@
-# React + TypeScript + Vite
+# CloudTasks
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+CloudTasks is a web application for organizing and tracking tasks for an individual or a work team. The project was developed as part of the laboratory **Web application deployed in the cloud with open source and managed services**, whose purpose is to take an application from local development to a solution connected to cloud services.
 
-Currently, two official plugins are available:
+The application allows users to sign in, view tasks in a calendar, and manage them according to their role. Information is persistently stored in Supabase using PostgreSQL.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Team Members
 
-## React Compiler
+- Jonathan David Cortés Castaño
+- Andres Martínez Martínez
+- Juan Camilo Borrero Flórez
+- Anna Sophia Caicedo Bejarano
+- Juan Camilo Peláez Marulanda
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Features
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
+- Sign-in through Supabase Auth.
+- Task views by day, week, or month.
+- Task creation, editing, and deletion for administrators.
+- Changing a task between pending and completed states.
+- Displaying each task's title, description, priority, deadline, and status.
+- Credential and task data validation.
+- Persistent storage in a managed PostgreSQL database.
 
-## Expanding the Oxlint configuration
+## Technologies and Services
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+- **React and TypeScript:** interface development and static typing.
+- **Vite:** development server and build process.
+- **Tailwind CSS:** styling and visual design.
+- **TanStack Query:** queries, mutations, and data updates.
+- **React Hook Form and Zod:** forms and validation.
+- **Supabase:** authentication, API, and PostgreSQL persistence.
+- **Git and GitHub:** version control and collaboration.
+- **Vercel:** frontend deployment.
+- **Cloudflare:** DNS, HTTPS, and access through the configured domain.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## How It Was Built
+
+Development was carried out progressively. First, the laboratory requirements were analyzed and a calendar interface was designed to display tasks. React components and forms were then implemented, using Zod for validation and separating data access logic into reusable hooks.
+
+The application connects to Supabase through its official client. Queries and CRUD operations are managed with TanStack Query, while Supabase Auth handles sign-in. The user's role determines the permitted actions: administrators can create, edit, and delete tasks, while users can view tasks and update their completion status.
+
+Finally, the project can be built for production and deployed to Vercel from the GitHub repository. Cloudflare is part of the planned access flow for associating a domain, managing DNS, and enabling HTTPS before routing traffic to Vercel.
+
+## Architecture
+
+```text
+User
+  |
+  v
+Cloudflare (domain, DNS, and HTTPS)
+  |
+  v
+Vercel (CloudTasks frontend)
+  |
+  v
+Supabase Auth + API
+  |
+  v
+PostgreSQL (`tasks` table)
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The main flow is as follows:
+
+1. The user accesses CloudTasks through the configured domain.
+2. Cloudflare resolves the domain and manages HTTPS access.
+3. Vercel serves the frontend application.
+4. React requests authentication and data from Supabase.
+5. Supabase queries or modifies the tasks stored in PostgreSQL.
+
+## Task Model
+
+Each task contains the following fields:
+
+| Field | Description |
+| --- | --- |
+| `id` | Unique identifier |
+| `title` | Task title |
+| `description` | Description |
+| `completed` | Completion status |
+| `created_at` | Creation date |
+| `deadline` | Deadline |
+| `priority` | Priority: `low`, `mid`, or `high` |
+
+## Local Development
+
+### Requirements
+
+- Node.js installed.
+- pnpm installed.
+- A Supabase project with authentication and a configured `tasks` table.
+
+### Installation
+
+```bash
+pnpm install
+```
+
+Create a `.env.local` file in the project root with your Supabase project's public variables:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+```
+
+Start the development server:
+
+```bash
+pnpm dev
+```
+
+To generate a production build:
+
+```bash
+pnpm build
+```
+
+## Laboratory Stages
+
+### Stage 1: Local Development and Version Control
+
+The initial CloudTasks interface and logic were built, task management operations were tested locally, and the code was organized in a Git repository synchronized with GitHub.
+
+### Stage 2: Persistence and Deployment
+
+Supabase was integrated as a Backend as a Service and PostgreSQL as the persistence system. The application uses Supabase Auth and CRUD operations on the `tasks` table. The frontend is prepared for deployment to Vercel through the GitHub integration.
+
+### Stage 3: Secure Access with Cloudflare
+
+The publication flow includes configuring a domain or subdomain in Cloudflare, its DNS records, HTTPS/TLS, and routing to the project deployed on Vercel. The expected access flow is:
+
+```text
+https://cloudtasks.example.com -> Cloudflare -> Vercel -> CloudTasks -> Supabase
+```
+
+## Main Structure
+
+```text
+src/
+├── components/       Interface components and forms
+├── utils/             Supabase client and task hooks
+├── App.tsx            Main calendar view
+├── schemas.ts         Validation schemas
+└── types.ts           Application data types
+```
+
+## Project Status
+
+CloudTasks has a functional interface, authentication, task queries, role-based controls, form validation, and Supabase integration. Vercel deployment and Cloudflare domain configuration must be completed using the accounts and resources defined for the team.
