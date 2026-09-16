@@ -9,7 +9,7 @@ const dbTaskToEntity = (dbt: DBTask): Task => ({
   priority: dbt.priority as Priority,
 });
 
-export default function useTasks(role: UserRole = 'user') {
+export default function useTasks(_userRole: UserRole = 'user') {
   const useAllTasks = (range?: 'day' | 'week' | 'month') =>
     useQuery<Task[]>({
       queryKey: ['all-tasks', range],
@@ -88,14 +88,10 @@ export default function useTasks(role: UserRole = 'user') {
       },
     });
 
-  const useCreateTask = () =>
-    useMutation({
-      mutationKey: ['cr-task'],
+  const useCreateTask = () => {
+    return useMutation({
+      mutationKey: ['create-task'],
       mutationFn: async (task: CreateTask) => {
-        if (role !== 'admin') {
-          throw new Error('Only admins can create tasks');
-        }
-
         const { error } = await supabase.from('tasks').insert(task);
 
         if (error) {
@@ -105,6 +101,7 @@ export default function useTasks(role: UserRole = 'user') {
         return true;
       },
     });
+  };
 
   const useSwitchTaskCompletion = () =>
     useMutation({
@@ -138,10 +135,6 @@ export default function useTasks(role: UserRole = 'user') {
     useMutation({
       mutationKey: ['edit-task'],
       mutationFn: async ({ id, task }: { id: string; task: CreateTask }) => {
-        if (role !== 'admin') {
-          throw new Error('Only admins can edit tasks');
-        }
-
         const { error } = await supabase
           .from('tasks')
           .update(task)
@@ -159,10 +152,6 @@ export default function useTasks(role: UserRole = 'user') {
     useMutation({
       mutationKey: ['delete-task'],
       mutationFn: async (id: string) => {
-        if (role !== 'admin') {
-          throw new Error('Only admins can delete tasks');
-        }
-
         const { error } = await supabase.from('tasks').delete().eq('id', id);
 
         if (error) {

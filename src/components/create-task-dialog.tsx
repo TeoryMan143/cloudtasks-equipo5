@@ -69,8 +69,10 @@ export function CreateTaskDialog({
         setOpen(false);
         toast.success('Task created successfully');
       },
-      onError: error =>
-        toast.error(error.message || 'Could not create the task'),
+      onError: error => {
+        console.log(error);
+        toast.error(error.message || 'Could not create the task');
+      },
     });
   };
 

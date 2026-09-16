@@ -21,8 +21,14 @@ export default function useUserRole() {
         .eq('id', user.id)
         .single();
 
+      console.log(data);
+
       if (error) {
         throw new Error(error.message);
+      }
+
+      if (data.role !== 'admin' && data.role !== 'user') {
+        throw new Error('User role is not configured');
       }
 
       return data.role;
