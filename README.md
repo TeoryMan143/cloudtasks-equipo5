@@ -130,7 +130,7 @@ Supabase was integrated as a Backend as a Service and PostgreSQL as the persiste
 The publication flow includes configuring a domain or subdomain in Cloudflare, its DNS records, HTTPS/TLS, and routing to the project deployed on Vercel. The expected access flow is:
 
 ```text
-https://cloudtasks.example.com -> Cloudflare -> Vercel -> CloudTasks -> Supabase
+https://cloudtasks.teoryman.cc -> Cloudflare -> Vercel -> CloudTasks -> Supabase
 ```
 
 ## Main Structure
